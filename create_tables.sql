@@ -64,7 +64,8 @@ create table coupons(id serial,
 );
 
 create table transactions(id serial primary key not null,
-	status varchar(10) not null default 'pending'
+	amount decimal(10, 4) not null,
+	status varchar(10) not null default 'pending',
 	constraint status_type check(status in('pending', 'complete', 'failed')),
 	created_at timestamp default current_timestamp,
 	order_id integer references orders,
