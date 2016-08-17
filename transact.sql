@@ -1,9 +1,7 @@
-select process_cart(1);
-select process_cart(2);
-select process_cart(3);
-select process_cart(4);
+select process_cart(1, 1);
+select process_cart(2, 2);
+select process_cart(3, 3);
+select process_cart(4, 4);
 
-insert into "transactions"("amount", "order_id", "user_id", "status", "payment_method", "flow") values (20, 1, 1, 'pending', 1, 'from');
-insert into "transactions"("amount", "order_id", "user_id", "status", "payment_method", "flow") values (40, 2, 2, 'pending', 1, 'from');
-insert into "transactions"("amount", "order_id", "user_id", "status", "payment_method", "flow") values (50, 3, 3, 'pending', 5, 'from');
-insert into "transactions"("amount", "order_id", "user_id", "status", "payment_method", "flow") values (40, 4, 4, 'pending', 1, 'from');
+update transactions set status = 'complete' where id = 1;
+update transactions set status = 'complete' where id = 2;
