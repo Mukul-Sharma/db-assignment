@@ -56,11 +56,18 @@ create table payment_methods(id serial primary key not null,
 	description text not null unique
 );
 
-create table coupons(id serial,
+create table coupons(id serial primary key not null,
 	valid_for_days integer default 1,
-	code varchar(10) not null primary key,
+	code varchar(10) not null unique,
 	amount decimal(10, 4) not null,
-	created_at timestamp default current_timestamp
+	created_at date default current_date
+);
+
+create table coupon_uses(id serial,
+	user_id integer references users,
+	coupon_id integer references coupons,
+	use_date timestamp default current_timestamp,
+	unique(user_id, coupon_id)
 );
 
 create table transactions(id serial primary key not null,

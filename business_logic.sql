@@ -1,11 +1,20 @@
-CREATE OR REPLACE FUNCTION process_cart(which in INTEGER, method in INTEGER) RETURNS void AS
+CREATE OR REPLACE FUNCTION process_cart(which in INTEGER, method in INTEGER, coupon_use_id in INTEGER) RETURNS void AS
 $$
 DECLARE
 	order_cost decimal(10,4);
 	current_order_id integer;
 	ordering_user_id integer;
 	cart_item RECORD;
+	t_status varchar(10);
 BEGIN
+
+	IF method = 5 THEN
+		IF (select count(*) from coupon_uses where id = 0) < 1 THEN
+			RAISE EXCEPTION 'Nonexistent ID --> %', coupon_used_id
+      		USING HINT = 'Please check your coupon use ID';
+		END IF;
+	END IF;
+	
 	insert into orders(user_id, cost)
 	select c.user_id, c.cost
 	from carts as c
@@ -18,7 +27,13 @@ BEGIN
 
    	delete from cart_items where cart_id = which;
    	
-   	insert into "transactions"("amount", "order_id", "user_id", "status", "payment_method", "flow") values (order_cost, current_order_id, ordering_user_id, 'pending', method, 'from');
+   	IF method = 5 THEN
+   		t_status := 'complete';
+   	ELSE
+   		t_status := 'pending'; 
+   	END IF;
+   	
+   	insert into "transactions"("amount", "order_id", "user_id", "status", "payment_method", "flow") values (order_cost, current_order_id, ordering_user_id, t_status, method, 'from');
 END;
 $$
 language plpgsql;
@@ -56,12 +71,31 @@ LANGUAGE plpgsql;
 CREATE TRIGGER clear_cart AFTER DELETE ON cart_items
    FOR EACH ROW EXECUTE PROCEDURE clear_cart();
 
-CREATE OR REPLACE FUNCTION isValidCoupon(coupon_number integer, days integer) returns boolean as $$
+CREATE OR REPLACE FUNCTION is_valid_coupon(coupon_number integer, days integer) returns boolean as $$
 BEGIN
 	return (select count(id) from coupons where id = coupon_number and created_at > current_date - days) > 0;
 END;
 $$
 language plpgsql;
+
+CREATE OR REPLACE FUNCTION check_coupon() RETURNS TRIGGER AS $check_coupon$
+
+	DECLARE
+		coupon_days integer;
+	BEGIN
+		select valid_for_days into coupon_days from coupons where id = NEW.coupon_id;
+		IF (select is_valid_coupon(NEW.coupon_id, coupon_days)) THEN
+			RETURN NEW;
+		ELSE 
+			RAISE EXCEPTION 'Coupon Expired %', NEW.coupon_id
+	  		USING HINT = 'Please check your coupon ID';
+	  	END IF;
+	END;
+$check_coupon$
+language plpgsql;
+
+CREATE TRIGGER check_coupon BEFORE INSERT ON coupon_uses
+FOR EACH ROW EXECUTE PROCEDURE check_coupon();
 
 CREATE OR REPLACE FUNCTION process_order() RETURNS trigger AS $process_order$
 	BEGIN

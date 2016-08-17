@@ -43,3 +43,7 @@ insert into coupons (code, valid_for_days, amount) values ('HELLO2', 1, 10);
 insert into coupons (code, valid_for_days, amount) values ('HELLO3', 4, 50);
 insert into coupons (code, valid_for_days, amount) values ('HELLO1', 1, 50);
 insert into coupons (code, valid_for_days, amount) values ('HELLO4', 5, 100);
+
+insert into coupon_uses(user_id, coupon_id) values (1, 1);
+insert into coupon_uses(user_id, coupon_id) values (2, 1);
+insert into coupon_uses(user_id, coupon_id) values (3, 2);
