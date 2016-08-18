@@ -9,8 +9,8 @@ DECLARE
 BEGIN
 
 	IF method = 5 THEN
-		IF (select count(*) from coupon_uses where id = 0) < 1 THEN
-			RAISE EXCEPTION 'Nonexistent ID --> %', coupon_used_id
+		IF (select count(*) from coupon_uses where id = coupon_use_id) < 1 THEN
+			RAISE EXCEPTION 'Invalid Coupon --> %', coupon_used_id
       		USING HINT = 'Please check your coupon use ID';
 		END IF;
 	END IF;
